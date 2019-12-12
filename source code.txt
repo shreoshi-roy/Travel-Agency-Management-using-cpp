@@ -1,0 +1,642 @@
+#include<fstream.h>
+#include<conio.h>
+#include<stdio.h>
+#include<process.h>
+#include<string.h>
+#include<iomanip.h>
+
+int counter=1;   //counts no. of times welcome screen has been displayed
+int choice;        //stores menu's choice
+int cchoice;         //stores country's choice
+char country[10];       //stores name of country selected
+int pointer;         //points beginning of desired packages in binary file
+int pos;            //comparing U.package and P.retrnpcode()
+char extra;     //accepts character entered by user to proceed to next screen
+void start();        //initial screen with menu
+void list();            //contains list of countries
+void assigncountry();        //assigns country acc to option selected
+void option1();           //code for choice=1
+void option2();            //code for choice=2,3,4
+void calculate();             //calculates total amount of trip
+
+
+//****************
+//****CLASS 1*****
+//****************
+class package
+{
+ char pcode[3];
+ char city[20];
+ char hotel[20];
+ char flight[20];
+ int star;
+
+ public:
+ float hprice;                // hotel price
+ float fexprice;             //flight executive price
+ float fecprice;            //flight economy price
+
+
+ void accept()
+ {
+  cout<<"Enter pcode ";
+  gets(pcode);
+  cout<<"City ";
+  gets(city);
+  cout<<"Hotel name";
+  gets(hotel);
+  cout<<"no. of stars ";
+  cin>>star;
+  cout<<"hotel price ";
+  cin>>hprice;
+  cout<<"flight name ";
+  gets(flight);
+  cout<<"flight executive price ";
+  cin>>fexprice;
+  cout<<"flight economy price ";
+  cin>>fecprice;
+ }
+
+ void display()
+ {
+   cout<<setw(4)<<pcode<<"   |"<<setw(7)<<city<<"|"<<setw(8)<<hotel<<" |";
+   cout<<setw(2)<<star<<"  |"<<setw(8)<<hprice<<"   |"<<setw(9)<<flight<<"  |";
+   cout<<setw(9)<<fexprice<<"   |"<<setw(9)<<fecprice<<"\n";
+ }
+
+ char* retrnpcode()
+ { return pcode; }
+
+ char* retrnhotel()
+ { return hotel;}
+
+ char* retrnflight()
+ { return flight; }
+
+};
+package P;
+
+//****************
+//****CLASS 2*****
+//****************
+class user
+{
+char country[10];
+char package[3];
+char hotel[20];
+char flight[20];
+char name[15];
+char mobile[10];
+char location[15];      //in India, enter city
+char date[10];
+
+
+public:
+int regno;
+float hamount;
+float famount;
+int days;
+int tourists;
+char type;
+
+void search(int r);   //r is the reg no entered by user
+void edit(int r);
+void del(int r);
+
+
+char* retrnpackage()
+{return package;}
+
+char* retrnhotel()
+{ return hotel;}
+
+char* retrnflight()
+{ return flight; }
+
+
+
+void accept()
+{
+ clrscr();
+ cout<<"\n PLEASE FILL DETAILS OF TRIP";
+ cout<<"\n ---------------------------\n\n";
+ cout<<" Country "; gets(country);
+
+ if (choice==2)
+ { cout<<" Package code ";  gets(package);  }
+ if (choice==3)
+ { cout<<" Hotel name ";   gets(hotel); strcpy(package,"-");  }
+ if (choice==4)
+ { cout<<" Flight name ";   gets(flight);  strcpy(package,"-"); }
+
+ if (choice!=4)
+ { cout<<" Duration of trip (in days) ";  cin>>days; }
+
+ cout<<" No. of people/tourists ";  cin>>tourists;
+
+ if (choice!=3)
+ { cout<<" Enter X for executive class and E for economy class (Default: economy) ";  cin>>type; }
+
+ cout<<"\n\n\n\n PLEASE FILL YOUR PERSONAL DETAILS";
+ cout<<      "\n ---------------------------------\n\n";
+ cout<<" Name "; gets(name);
+ cout<<" Current location (city) ";  gets(location);
+ cout<<" Date of journey (dd-mm-yy) ";    gets(date);
+ cout<<" Contact no. ";  gets(mobile);
+}
+
+
+void display()         //displays main info
+{
+cout<<setw(5)<<regno<<"    |"<<setw(8)<<name<<"    |"<<setw(8)<<location<<"  |";
+cout<<setw(9)<<country<< " |"<<setw(6)<<package<<"   |"<<setw(7)<<date<<"  |";
+cout<<setw(10)<<mobile<<endl;
+}
+
+void display2()        //displays info if package is selected
+{
+cout<<endl<<endl<<endl;
+cout<<"---------------------------------------------------------------------------\n";
+cout<<"Duration of stay | No. of tourists | Hotel fare | Flight fare | Total fare\n";
+cout<<"-----------------+-----------------+------------+-------------+------------\n";
+cout<<setw(8)<<days<<"         |"<<setw(6)<<tourists<<"           |"<<setw(8)<<hamount<<"    |";
+cout<<setw(8)<<famount<<"     |"<<setw(8)<<hamount+famount<<endl;
+cout<<"-----------------+-----------------+------------+-------------+------------\n";
+}
+
+void display3()       //displays info if hotel booking is selected
+{
+cout<<endl<<endl<<endl;
+cout<<"---------------------------------------------------------------------------\n";
+cout<<"Duration of stay | No. of tourists | Hotel Name | Hotel price | Total fare\n";
+cout<<"-----------------+-----------------+------------+-------------+------------\n";
+cout<<setw(8)<<days<<"         |"<<setw(6)<<tourists<<"           |"<<setw(9)<<hotel<<"   |";
+cout<<setw(7)<<hamount/(days*tourists)<<"      |"<<setw(7)<<hamount<<endl;
+cout<<"-----------------+-----------------+------------+-------------+------------\n";
+}
+
+void display4()      //displays info if flight booking is selected
+{
+cout<<endl<<endl<<endl;
+cout<<"-----------------------------------------------------------|\n";
+cout<<" No. of tourists | Flight Name | Flight price | Total fare |\n";
+cout<<"-----------------+-------------+--------------+------------|\n";
+cout<<setw(6)<<tourists<<"           |"<<setw(9)<<flight<<"    |";
+cout<<setw(7)<<famount/tourists<<"       |"<<setw(7)<<famount<<"     |\n";
+cout<<"-----------------+-------------+--------------+------------|\n";
+}
+
+
+
+};
+
+user U;
+
+
+//***********************
+//****MAIN FUNCTION *****
+//***********************
+void main()
+{
+clrscr();
+
+if (counter==1)  //ensures that welcome screen appears only the first time program runs
+{
+cout<<endl<<endl<<endl<<endl<<endl;  //put \\ to escape wherever \ was present
+cout<<"\t   __      _____ _    ___ ___  __  __ ___       _____ ___  \n";
+cout<<"\t   \\\ \\\    / / __| |  / __/ _ \\\|  \\\/  | __|     |_   _/ _ \\\ \n";
+cout<<"\t    \\\ \\\/\\\/ /| _|| |_| (_| (_) | |\\\/| | _|        | || (_) |\n";
+cout<<"\t     \\\_/\\\_/ |___|____\\\___\\\___/|_|  |_|___|       |_| \\\___/ \n";
+
+cout<<endl<<endl;
+
+cout<<" __  __   _   _  _____   __  ____   __  _____ ___ ___ ___      ___ ___  __  __ \n";
+cout<<"|  \\\/  | /_\\\ | |/ / __| |  \\\/  \\\ \\\ / / |_   _| _ \\\_ _| _ \\\    / __/ _ \\\|  \\\/  |\n";
+cout<<"| |\\\/| |/ _ \\\| ' <| _|  | |\\\/| |\\\ V /    | | |   /| ||  _/ _ | (_| (_) | |\\\/| |\n";
+cout<<"|_|  |_/_/ \\\_\\\_|\\\_\\\___| |_|  |_| |_|     |_| |_|_\\\___|_|  (_) \\\___\\\___/|_|  |_|\n";
+
+cout<<"\n\n\n\n\n\n\n\t\t\tEnter any key to proceed... ";
+cin>>extra;
+counter++;
+}
+
+
+
+choice=1;
+while (choice!=6)
+{
+start();
+
+switch (choice)
+{
+case 1:	option1();
+	cout<<"\n\n\t\t1. Return";
+	cout<<"\n\t\t2. Book our customised packages";
+	cout<<"\n\t\t3. Book hotel";
+	cout<<"\n\t\t4. Book flight";
+	cout<<"\n\n\nEnter choice ";
+	cin>>choice;
+	if ((choice!=2)||(choice!=3)||(choice!=4))
+	main();
+	option2();
+	break;
+
+case 2: option1();
+	cout<<"\n\nEnter any key to proceed...";
+	cin>>extra;
+	option2();
+	break;
+
+case 3: option1();
+	cout<<"\n\nEnter any key to proceed...";
+	cin>>extra;
+	option2();
+	break;
+
+case 4: option1();
+	cout<<"\n\nEnter any key to proceed...";
+	cin>>extra;
+	option2();
+	break;
+
+case 5: ifstream fin;
+	fin.open("people.dat",ios::binary);
+	clrscr();
+	cout<<"--------------------------------------------------------------------------------";
+	cout<<" Reg.No. |    Name    |   From   |    To    | Package |   Date   | Contact no. \n";
+	cout<<"---------+------------+----------+----------+---------+----------+--------------";
+
+	fin.seekg(0, ios::end);
+	int positn=fin.tellg();
+	positn=(positn/sizeof(user));
+	fin.seekg(0, ios::beg);
+
+	int check=0;
+	fin.seekg(0, ios::beg);
+
+	for (int i=0;i<positn;++i)
+	{
+	 fin.read((char*)&U, sizeof(user));
+	 if (check!=U.regno)    //when records are deleted, they have repeated reg no
+	 U.display();
+	 check=U.regno;
+	}
+	cout<<"---------+------------+----------+----------+---------+----------+--------------\n";
+
+	cout<<"\n\n\n\t\tPress any key to go back ";
+	cin>>extra;
+	fin.close();
+	break;
+
+case 6: int ch=0;            //stores choice of manipulating user records
+	int rno;          //stores reg no
+	while (ch!=4)
+	{
+	 clrscr();
+	 int count=0;
+	 cout<<"\n\n\n\n\t\t1. Search and display details of my trip";
+	 cout<<"\n\t\t2. Edit details of my trip ";
+	 cout<<"\n\t\t3. Cancel booking";
+	 cout<<"\n\t\t4. Exit";
+	 cout<<"\n\n\t\t\tEnter your choice ";
+	 cin>>ch;
+	 if (ch!=4)
+	 {
+	  cout<<"\n\t\t\tEnter registration no. ";
+	  cin>>rno;
+	  ifstream fin;
+	  fin.open("people.dat",ios::binary);
+	  while (!fin.eof())
+	  {
+	   fin.read((char*)&U, sizeof(user));
+	   if (U.regno==rno)
+	   count++;
+	  }
+	  if (count==0)
+	  {
+	   cout<<"\n\t\t Record does not exist\n\t\t Enter any key to go back ";
+	   cin>>extra;
+	   main();
+	  }       // end of if(count==0)
+	 }        // end of if(ch!=4)
+
+
+	 switch (ch)
+	 {
+	  case 1: U.search(rno); break;
+	  case 2: U.edit(rno); break;
+	  case 3: U.del(rno); break;
+	  case 4: main();
+	 }    //end of nested switch
+	}    //end of while loop
+	break;
+
+case 7: cout<<"Program terminated";
+	exit(0);
+	break;
+
+default: cout<<"Invalid choice. Enter again ";
+	 break;
+}    //end of switch case
+}    // end of while loop
+getch();
+}
+
+//******************************
+//****END OF MAIN FUNCTION *****
+//******************************
+
+//***********************************************
+//****FUNCTION CONTAINING LIST OF COUNTRIES *****
+//***********************************************
+void list()
+{
+clrscr();
+cout<<"\n\n\t\t\tWHICH COUNTRY WOULD YOU LIKE TO VISIT?\n";
+cout<<    "\t\t\t**************************************\n\n";
+cout<<"\t\t\t\t1. Britain\n\n\t\t\t\t2. Germany\n\n\t\t\t\t3. Turkey\n\n\t\t\t\t4. Italy\n\n";
+cout<<"\t\t\t\t5. China\n\n\t\t\t\t6. Spain\n\n\t\t\t\t7. USA\n\n\t\t\t\t8. France\n\n";
+cout<<"\t\t\t\t9. Russia\n\n\t\t\t\t10. Thailand\n\n";
+cout<<"Enter choice ";
+cin>>cchoice;
+assigncountry();
+return;
+}
+
+
+//*****************************************************
+//****FUNCTION CONTAINING CODE FOR WELCOME SCREEN *****
+//*****************************************************
+void start()
+{
+clrscr();
+cout<<"\n\n\n\n\n\t   How can we help you?\n";
+cout<<"\n\t\t1. Look for places to visit";
+cout<<"\n\t\t2. Book our customised packages";
+cout<<"\n\t\t3. Book hotel";
+cout<<"\n\t\t4. Book flight";               //packages
+cout<<"\n\t\t5. View all reservations";
+cout<<"\n\t\t6. View details of your trip";
+cout<<"\n\t\t7. Exit";
+cout<<"\n\n\t   Enter choice ";
+cin>>choice;
+return;
+}
+
+
+//*******************************************************************
+//****FUNCTION FOR ASSIGNING COUNTRY NAMES ACC TO OPTION CHOSEN *****
+//*******************************************************************
+void assigncountry()
+{
+if (cchoice==1)
+ strcpy (country, "BRITAIN");
+else if (cchoice==2)
+ strcpy (country, "GERMANY");
+else if (cchoice==3)
+ strcpy (country, "TURKEY");
+else if (cchoice==4)
+ strcpy (country, "ITALY");
+else if (cchoice==5)
+ strcpy (country, "CHINA");
+else if (cchoice==6)
+ strcpy (country, "SPAIN");
+else if (cchoice==7)
+ strcpy (country, "USA");
+else if (cchoice==8)
+ strcpy (country, "FRANCE");
+else if (cchoice==9)
+ strcpy (country, "RUSSIA");
+else if (cchoice==10)
+ strcpy (country, "THAILAND");
+return;
+}
+
+
+//***********************************
+//****FUNCTION TO SHOW PACKAGES *****
+//***********************************
+void option1()
+{
+list();
+pointer=(cchoice-1)*6*sizeof (package); //as each country has 6 records
+clrscr();
+cout<<"\t\t\t\t    "<<country<<endl;
+cout<<"\t\t\t\t~~~~~~~~~~~~~~\n\n";
+ifstream fin;
+fin.open ("record.dat",ios::binary);
+fin.seekg (pointer, ios::beg);
+
+cout<<"-------------------------------------------------------------------------------\n";
+cout<<"Package|  City |  Hotel  |star|Hotel price|Flight Name|Flight(Exec)|Flight(Eco)\n";
+cout<<"-------+-------+---------+----+-----------+-----------+------------+-----------\n";
+
+for (int i=0;i<6;++i)  //as each country has 6 records
+{
+ fin.read((char*)&P, sizeof (package));
+ P.display();
+}
+cout<<"-------+-------+---------+----+-----------+-----------+------------+-----------\n";
+cout<<"\n\nNOTE: * All hotel fares are per person per day and flight fares per person.";
+cout<<"\n      * Fares of all flights from India have been approximated to be same. ";
+fin.close();
+
+return;
+}
+
+
+//*********************************************
+//****FUNCTION TO ACCEPT CUSTOMER DETAILS *****
+//*********************************************
+void option2()
+{
+fstream finout;
+finout.open("people.dat",ios::binary|ios::app);
+U.accept();
+
+calculate();
+
+finout.seekg(0, ios::end);      //assigning registration no.
+int positn=finout.tellg();
+U.regno=(positn/sizeof(user)) +1;  //because initially ios::end is at 0
+
+finout.write((char*)&U, sizeof(user));
+
+clrscr();
+cout<<"\n\t\t\t YOUR BOOKING IS SUCCESSFUL!";
+cout<<"\n\nYour registration number is "<<U.regno;
+cout<<"\n\n Amount to be paid is: \n";
+
+if (choice!=4)
+{ cout<<"\nHotel fare= "<<U.hamount; }
+if (choice!=3)
+{ cout<<"\nFlight fare= "<<U.famount; }
+if (choice==2)
+{ cout<<"\nTotal fare= "<<U.hamount+U.famount; }
+
+cout<<"\n\n\t\t\tPress any key to proceed ";
+cin>>extra;
+
+
+finout.close();
+main();
+return;
+}
+
+
+//***********************************************
+//****FUNCTION TO CALCULATE TOTAL COST OF TRIP *****
+//***********************************************
+void calculate()
+{
+ifstream fin;                    //calculation of amount to be paid
+fin.open("record.dat",ios::binary);
+
+if (choice==2)             //package is selected ie cost of hotel+flight
+{
+ while (!fin.eof())
+ {
+ pos=fin.tellg();
+ fin.read((char*)&P, sizeof(package));
+ if (strcmpi(U.retrnpackage(), P.retrnpcode())==0)
+    break;
+ }
+}
+
+
+if (choice==3)         //only cost of hotel
+{
+ while (!fin.eof())
+ {
+ pos=fin.tellg();
+ fin.read((char*)&P, sizeof(package));
+ if (strcmpi(U.retrnhotel(), P.retrnhotel())==0)
+    break;
+ }
+}
+
+
+if (choice==4)        //only cost of flight
+{
+ while (!fin.eof())
+ {
+ pos=fin.tellg();
+ fin.read((char*)&P, sizeof(package));
+ if (strcmpi(U.retrnflight(), P.retrnflight())==0)
+    break;
+ }
+}
+
+
+if (choice!=4)                //ie choice is 2 or 3
+U.hamount=P.hprice*U.days*U.tourists;
+
+if (choice!=3)                //ie choice is 2 or 4
+{
+ if ((U.type=='X')|| (U.type=='x'))
+ U.famount=P.fexprice*U.tourists;
+ else
+ U.famount=P.fecprice*U.tourists;
+}
+
+fin.close();
+return;
+}
+
+
+//***************************************
+//****INLINE FUNCTIONS OF CLASS USER*****
+//***************************************
+
+//****FUNCTION TO SEARCH FOR A RECORD *****
+void user::search(int r)
+{
+ifstream fin;
+fin.open("people.dat",ios::binary);
+while (!fin.eof())
+{
+ fin.read((char*)&U, sizeof(user));
+ if (regno==r)
+ break;
+}
+
+clrscr();
+cout<<"\n\n\n--------------------------------------------------------------------------------";
+cout<<" Reg.No. |    Name    |   From   |    To    | Package |   Date   | Contact no. \n";
+cout<<"---------+------------+----------+----------+---------+----------+--------------";
+U.display();
+cout<<"---------+------------+----------+----------+---------+----------+--------------\n";
+
+if (strlen(package)==2)     // package='-' for choice 3 and 4
+U.display2();
+else if (strlen(hotel)>2)   //hotel has some value entered only for choice 3
+U.display3();
+else
+U.display4();
+fin.close();
+
+cout<<"\n\n\t\t\tPress any key to proceed ";
+cin>>extra;
+}
+
+
+//****FUNCTION TO EDIT A RECORD *****
+void user::edit(int r)
+{
+clrscr();
+int Pos;
+
+fstream f1;
+f1.open("people.dat",ios::binary|ios::in|ios::out);
+while (!f1.eof())
+{
+ Pos=f1.tellg();
+ f1.read((char*)&U, sizeof(user));
+ if (regno==r)
+  break;
+}
+
+
+if (strlen(package)==2)     // package='-' for choice 3 and 4
+choice=2;
+else if (strlen(hotel)>2)   //hotel has some value entered only for choice 3
+choice=3;
+else
+choice=4;
+
+f1.seekg (Pos,ios::beg);
+U.accept();
+calculate();
+f1.write((char*)&U, sizeof(user));
+
+
+f1.close();
+
+cout<<"\n\n\t\t\tRECORD HAS BEEN SUCCESSFULLY EDITED";
+cout<<"\n\t\t\tPress any key to proceed ";
+cin>>extra;
+}
+
+
+//****FUNCTION TO DELETE A RECORD *****
+void user:: del(int r)
+{
+ifstream fin;
+fin.open("people.dat",ios::binary);
+ofstream fout;
+fout.open("New.dat",ios::binary);
+while (!fin.eof())
+{
+ fin.read ((char*)&U, sizeof(user));
+ if (regno!=r)
+ fout.write((char*)&U, sizeof(user));
+}
+fin.close();
+fout.close();
+remove ("people.dat");
+rename ("New.dat", "people.dat");
+
+cout<<"\n\n\t\t\tRECORD HAS BEEN SUCCESSFULLY DELETED";
+cout<<"\n\t\t\tPress any key to proceed ";
+cin>>extra;
+}
